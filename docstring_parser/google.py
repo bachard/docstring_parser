@@ -103,7 +103,7 @@ class GoogleParser:
             return self._build_single_meta(section, text)
 
         # Split spec and description
-        before, desc = text.split(":", 1)
+        before, desc = text.split(":", 1) if ":" in text else (text, None)
         if desc:
             desc = desc[1:] if desc[0] == " " else desc
             if "\n" in desc:
@@ -130,7 +130,7 @@ class GoogleParser:
         return DocstringMeta(args=[section.key], description=desc)
 
     def _build_multi_meta(
-        self, section: Section, before: str, desc: str
+        self, section: Section, before: str, desc: T.Optional[str]
     ) -> DocstringMeta:
         if section.key in PARAM_KEYWORDS:
             m = GOOGLE_TYPED_ARG_REGEX.match(before)
@@ -148,7 +148,7 @@ class GoogleParser:
                 arg_name, type_name = before, None
                 is_optional = None
 
-            m = GOOGLE_ARG_DESC_REGEX.match(desc)
+            m = GOOGLE_ARG_DESC_REGEX.match(desc) if desc else None
             default = m.group(1) if m else None
 
             return DocstringParam(

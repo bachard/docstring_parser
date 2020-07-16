@@ -309,14 +309,14 @@ def test_default_args():
         """A sample function
 
     A function the demonstrates docstrings
-    
+
     Args:
         arg1 (int): The firsty arg
         arg2 (str): The second arg
         arg3 (float, optional): The third arg. Defaults to 1.0.
         arg4 (Optional[Dict[str, Any]], optional): The fourth arg. Defaults to None.
         arg5 (str, optional): The fifth arg. Defaults to DEFAULT_ARG5.
-    
+
     Returns:
         Mapping[str, Any]: The args packed in a mapping
     """
@@ -591,3 +591,27 @@ def test_broken_meta() -> None:
 
     with pytest.raises(ParseError):
         parse("Args:\n    herp derp")
+
+def test_handles_missing_colon_in_args():
+    docstring = parse(
+        """A sample function
+
+    A function the demonstrates docstrings
+
+    Args:
+        arg1 (Optional[Dict[str, Any]], optional)
+        arg2 (str, optional): The fifth arg. Defaults to DEFAULT_ARG5.
+
+    Returns:
+        Mapping[str, Any]: description
+    """
+    )
+    assert docstring is not None
+    assert len(docstring.params) == 2
+
+    arg1 = docstring.params[0]
+    assert arg1.arg_name == "arg1"
+    assert arg1.is_optional
+    assert arg1.type_name == "Optional[Dict[str, Any]]"
+    assert arg1.default == None
+    assert arg1.description == None
